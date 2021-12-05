@@ -18,3 +18,8 @@ download ms c++ build tools : https://visualstudio.microsoft.com/fr/visual-cpp-b
 
 `pip install cx_Freeze`
 
+#Ofuscate
+
+`pip install pyarmor`
+
+`pyarmor obfuscate foo.py`
