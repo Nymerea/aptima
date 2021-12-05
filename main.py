@@ -1,8 +1,5 @@
-# This is a sample Python script.
 
-# Press Maj+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-from pynput.keyboard import Key, Listener
+from pynput.keyboard import Listener
 import logging
 
 import mss.tools
@@ -19,14 +16,12 @@ def on_press(key):
     logging.info(str(key))
 
 
-# with mss.mss() as sct:
-def yolo():
+def grab():
     root = tk.Tk()
     screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight()
     # The screen part to capture
     monitor = {"top": 0, "left": 0, "width": screen_width, "height": screen_height}
-    last_time = 0
     while "Screen capturing":
         grabber = mss.mss()
         output = str(time.time()) + ".jpeg".format(**monitor)
@@ -43,19 +38,8 @@ def yolo():
         print(output)
         time.sleep(1)
 
+
 with Listener(on_press=on_press) as listener:
-    x = threading.Thread(target=yolo)
+    x = threading.Thread(target=grab)
     x.start()
     listener.join()
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
