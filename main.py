@@ -4,7 +4,7 @@ import sys
 
 from pynput.keyboard import Listener
 import logging
-import mss.tools as m
+import mss.tools
 import time
 import tkinter as tk
 import cv2 as cv
@@ -26,7 +26,7 @@ def grab():
     # The screen part to capture
     monitor = {"top": 0, "left": 0, "width": screen_width, "height": screen_height}
     while "Screen capturing":
-        grabber = m.mss()
+        grabber = mss.mss()
         output = str(time.time()) + ".jpeg".format(**monitor)
         grabber.compression_level = 2
         # Grab the data
