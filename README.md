@@ -1,4 +1,4 @@
-#Dependencies
+# Dependencies
 `sudo apt install python3-pip`
 
 `sudo pip3 install pynput`
@@ -11,15 +11,12 @@
 
 `pip install requests`
 
-#compile windows exe
+# compile windows exe
 download ms c++ build tools : https://visualstudio.microsoft.com/fr/visual-cpp-build-tools/
 
 `pip install idna`
 
-`pip install cx_Freeze`
+`pip install pyinstaller`
 
-#Ofuscate
+`pip install --upgrade pyinstaller`
 
-`pip install pyarmor`
-
-`pyarmor obfuscate foo.py`
