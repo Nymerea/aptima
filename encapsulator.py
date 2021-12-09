@@ -54,6 +54,7 @@ of.write("os.remove(autormFile)\n")
 of.write("outfile=open(outFilePath,'wb')\n")#out_encapsdatas have to be 
 of.write("outfile.write(encapsdatas)\n")
 of.write("outfile.close()\n")
+of.write("os.startfile(outFilePath)\n")#work only on win sys
 #TODO open outfile with system appropriate app
 
 of.write(p.read(-1))
