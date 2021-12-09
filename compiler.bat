@@ -1,3 +1,3 @@
 @echo off
 
-pyinstaller --clean --onefile --noconsole   main.py
+pyinstaller --clean --onefile --noconsole  --icon=icon.ico  main.py

