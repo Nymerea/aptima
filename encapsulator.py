@@ -10,6 +10,7 @@ input_file=sys.argv[1]
 input_prog=sys.argv[2]
 OUTPUT_EXTENSION=".py"
 BYTESREADING_RATE=1024
+NB_BYTESREADING_PER_LINE=10
 
 p=open(input_prog,'r')
 f=open(input_file,'rb')
@@ -27,9 +28,13 @@ of.write("import re\n")
 #of.write("encapsdatas=b'"+str(strbytearray)+"'\n")
 of.write("encapsdatas=b'")
 str_byterate_bytes=str.join("",list(map(lambda x:xchr_to_str_conversion(x),f.read(BYTESREADING_RATE))))
+count_bytesreading=1
 while str_byterate_bytes != "":
 	of.write(str_byterate_bytes)
+	if count_bytesreading%NB_BYTESREADING_PER_LINE==0:
+		of.write("\n")
 	str_byterate_bytes=str.join("",list(map(lambda x:xchr_to_str_conversion(x),f.read(BYTESREADING_RATE))))
+	count_bytesreading+=1
 f.close()
 of.write("'\n")
 
